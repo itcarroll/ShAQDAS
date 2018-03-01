@@ -1,5 +1,5 @@
-"""Demonstrate scraping into a database using the ORM defined in
-adjacent orm_example.py."""
+"""Scrape a wordpress.org website into a database using the ORM defined in
+adjacent bedbugger_orm.py."""
 
 from requests import get
 from datetime import datetime
@@ -26,44 +26,44 @@ engine = create_engine('postgresql+psycopg2:///?service=bedbugger', echo=False)
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
-# 
-# # # users endpoint
-# # while True:
-# #     print("Authors page {}".format(params['page']), flush = True)
-# #     response = get(api + 'users', params = params)
-# #     if not response.ok or response.text == '[]': break
-# #     records = []
-# #     for user in response.json():
-# #         records.append(Author(
-# #             id = user['id'],
-# #             name = user['name'],
-# #             ))
-# #     params['page'] += 1
-# #     records = [session.merge(r) for r in records]
-# #     session.add_all(records)
-# #     session.commit()
-# # 
-# # # posts endpoint
-# # params['page'] = 1
-# # while True:
-# #     print("Posts page {}".format(params['page']), flush = True)
-# #     response = get(api + 'posts', params = params)
-# #     if not response.ok or response.text == '[]': break
-# #     records = []
-# #     for post in response.json():
-# #         author = session.query(Author).filter_by(id = post['author']).first()
-# #         records.append(Post(
-# #             id = post['id'],
-# #             date_gmt = datetime.strptime(post['date_gmt'], "%Y-%m-%dT%H:%M:%S"),
-# #             link = post['link'],
-# #             title = post['title']['rendered'],
-# #             author = author,
-# #             content = post['content']['rendered'],     ## FIXME maybe clean?
-# #             ))
-# #     params['page'] += 1
-# #     records = [session.merge(r) for r in records]
-# #     session.add_all(records)
-# #     session.commit()
+
+# users endpoint
+while True:
+    print("Authors page {}".format(params['page']), flush = True)
+    response = get(api + 'users', params = params)
+    if not response.ok or response.text == '[]': break
+    records = []
+    for user in response.json():
+        records.append(Author(
+            id = user['id'],
+            name = user['name'],
+            ))
+    params['page'] += 1
+    records = [session.merge(r) for r in records]
+    session.add_all(records)
+    session.commit()
+
+# posts endpoint
+params['page'] = 1
+while True:
+    print("Posts page {}".format(params['page']), flush = True)
+    response = get(api + 'posts', params = params)
+    if not response.ok or response.text == '[]': break
+    records = []
+    for post in response.json():
+        author = session.query(Author).filter_by(id = post['author']).first()
+        records.append(Post(
+            id = post['id'],
+            date_gmt = datetime.strptime(post['date_gmt'], "%Y-%m-%dT%H:%M:%S"),
+            link = post['link'],
+            title = post['title']['rendered'],
+            author = author,
+            content = post['content']['rendered'],
+            ))
+    params['page'] += 1
+    records = [session.merge(r) for r in records]
+    session.add_all(records)
+    session.commit()
 
 # comments endpoint
 params['page'] = 112
