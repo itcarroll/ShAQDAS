@@ -68,15 +68,15 @@ codes_tab <- tabPanel('Codes',
     h3('Codebook'),
     p('Download the current codebook (displayed below), or
       replace it by uploading a new CSV file with identical structure.'),
-    fileInput('codebook_up', label = '', accept = 'text/csv'),
     tableOutput('codebook'),
     downloadButton('codebook_down', 'Download'),
+    fileInput('codebook_up', label = 'Replace with ...', accept = 'text/csv'),
     h3('Codes'),
     p('The current codes are displayed with the associated post or comments.
       Download the table of all codes, or replace it by uploading a new CSV
       file with identical structure.'),
-    fileInput('codes_up', label = '', accept = 'text/csv'),
-    downloadButton('codes_down', 'Download')
+    downloadButton('codes_down', 'Download'),
+    fileInput('codes_up', label = 'Replace with ...', accept = 'text/csv')
 )
 main <- mainPanel(
     tabsetPanel(id = 'content', type = 'tabs', post_tab, comment_tab, codes_tab),
@@ -153,9 +153,9 @@ server <- function(input, output, session) {
     observeEvent(input[['obs_submit']], {
         obs <- robs()
         obs_row <- nrow(obs) + 1
-        obs[[obs_row, 1]] <- input[['post_id']]
+        obs[[obs_row, 1]] <- as.integer(input[['post_id']])
         if (input[['content']] == 'Comments') {
-            obs[[obs_row, 2]] <- input[['comment_id']]
+            obs[[obs_row, 2]] <- as.integer(input[['comment_id']])
         }
         obs[[obs_row, 3]] <- input[['obs_code']]
         obs[[obs_row, 4]] <- input[['obs_text']]
