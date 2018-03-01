@@ -1,0 +1,59 @@
+body {
+    height: 100%;
+    overflow: hidden;
+}
+
+#app-container {
+    padding: 0;
+}
+
+#main-panel {
+    height: 100vh;
+    overflow-y: scroll;
+    padding-right: 20px;
+}
+
+#sidebar-panel {
+    height: 100vh;
+    overflow-y: scroll;
+    border-radius: 0;
+}
+
+#comment_content > div {
+    padding: 10px;
+    border: 1px solid #e3e3e3;
+    margin: 10px;
+    
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+#comment_content > .active {
+    border-color: red;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+
+}
+
+table {
+  table-layout: fixed;
+}
+
+tr th {
+    width: 15%;
+}
+
+tr :nth-child(2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: auto;
+}
+
+h3 {
+    font-size: 1.5em;
+}
