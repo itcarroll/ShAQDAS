@@ -1,6 +1,6 @@
 # BedbuggerCoder Docs
 
-RStudio is a program that (among many other things) runs "apps" that are created using [Shiny](https://shiny.rstudio.com/). BedbuggerCoder is an app created to facilitate annotation of the articles published on "http://bedbugger.com".
+RStudio is a program that (among many other things) runs "apps" that are created using [Shiny](https://shiny.rstudio.com/). BedbuggerCoder is an app created to facilitate annotation of the articles published on http://bedbugger.com for the Bedbug Ecology research project at SESYNC.
 
 ## Installation
 
@@ -31,4 +31,3 @@ All comments on a selected article are visible in this tab, the selected comment
 ### The “Codes” Tab
 
 There are two tables that can be imported or exported (both are stored locally within the "BedbuggerCoder" folder). The "Codebook" is a table that determines which codes are available in the drop down menu for code entry. The "Codes" table holds all entered codes. Uploading either one **will overwrite** the tables in the app, so always "Download" a copy as a backup before uploading a replacement.
-
