@@ -4,6 +4,7 @@ RStudio is a program that (among many other things) runs "apps" that are created
 
 ## Installation
 
+1. Install [R](https://cran.rstudio.com/)
 1. Install [RStudio Desktop](https://www.rstudio.com/products/rstudio/download/#download)
 1. Open RStudio
     1. Find “Tools > Install Packages …” in the menu bar.
