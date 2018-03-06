@@ -11,8 +11,8 @@ RStudio is a program that (among many other things) runs "apps" that are created
 
 1. Download [BedbuggerCoder.zip](http://sesync.us/xa1f3) using password 'islandcreek'.
 1. Login to [SESYNC's RStudio Server](https://rstudio.sesync.org)
-1. Upload “BedbuggerCoder.zip” and open the "BedbuggerCoder" folder in the "Files" pane.
-1. Open the “app.R” file in the "BedbuggerCoder" folder.
+1. Upload “BedbuggerCoder.zip” using the "Upload" button in the "Files" pane.
+1. Open the “app.R” file within the "BedbuggerCoder" folder.
 1. Click "Run App" to launch the app.
 
 ## Installation (for offline use)
