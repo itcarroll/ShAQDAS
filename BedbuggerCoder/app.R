@@ -156,9 +156,16 @@ server <- function(input, output, session) {
 
     # comment content
     output[['comment_content']] <- renderText({
-        comments <- current_comment_set()[['content']]
-        comments[[1]] <- sub('<div', '<div class="active"',
-            comments[[1]], fixed = TRUE)
+        comment_set <- current_comment_set()
+        idx <- which(comment_set[['id']] == current_comment()[['id']])
+        # unideal solution this running before current_comment also updates
+        if (length(idx) == 0) {
+            comments = ''
+        } else {
+            comments <- comment_set[['content']]
+            comments[[idx]] <- sub('<div', '<div class="active"',
+                comments[[idx]], fixed = TRUE)
+        }
         paste(comments, collapse = '')
     })
     
@@ -195,8 +202,8 @@ server <- function(input, output, session) {
     # append to codebook
     observeEvent(input[['codebook_submit']], {
         idx <- nrow(codebook) + 1
-        codebook[[idx, 1]] <- input[['codebook_code']]
-        codebook[[idx, 2]] <- input[['codebook_description']]
+        codebook[[idx, 'code']] <- input[['codebook_code']]
+        codebook[[idx, 'description']] <- input[['codebook_description']]
         updateTextInput(session, 'codebook_code', value = '')
         updateTextInput(session, 'codebook_description', value = '')
         rcodebook(codebook)
