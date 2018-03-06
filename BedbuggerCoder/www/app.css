@@ -39,15 +39,15 @@ body {
 
 }
 
-table {
+#sidebar-panel table {
   table-layout: fixed;
 }
 
-tr th {
+#sidebar-panel tr th {
     width: 20%;
 }
 
-tr :nth-child(2) {
+#sidebar-panel tr :nth-child(2) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

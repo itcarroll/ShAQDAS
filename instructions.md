@@ -1,8 +1,21 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
 # BedbuggerCoder Docs
 
 RStudio is a program that (among many other things) runs "apps" that are created using [Shiny](https://shiny.rstudio.com/). BedbuggerCoder is an app created to facilitate annotation of the articles published on http://bedbugger.com for the Bedbug Ecology research project at SESYNC.
 
-## Installation
+## Access (for online use)
+
+1. Download [BedbuggerCoder.zip](http://sesync.us/xa1f3) using password 'islandcreek'.
+1. Login to [SESYNC's RStudio Server](https://rstudio.sesync.org)
+1. Upload “BedbuggerCoder.zip” and open the "BedbuggerCoder" folder in the "Files" pane.
+1. Open the “app.R” file in the "BedbuggerCoder" folder.
+1. Click "Run App" to launch the app.
+
+## Installation (for offline use)
 
 1. Install [R](https://cran.rstudio.com/)
 1. Install [RStudio Desktop](https://www.rstudio.com/products/rstudio/download/#download)
