@@ -25,8 +25,11 @@ if (file.exists(obs_filename)) {
 }
 if (!exists('codebook')) {
     codebook <- data.frame(
-        code = factor(c('BB8', 'C3PO', 'etc.')),
-        description = c('description of code BB8', 'description of code C3PO', ''),
+        code = c('BB-8', 'C-3PO', 'R2-D2'),
+        description = c(
+            'spherical in quality',
+            'shines, and translates easily',
+            'evidence of trouble ahead'),
         stringsAsFactors = FALSE)
 }
 if (!exists('obs')) {
@@ -38,12 +41,13 @@ if (!exists('obs')) {
         memo = character(), stringsAsFactors = FALSE)
 }
 
-# UI (user interface)
+# UI (User Interface)
 
 ## elements
 sidebar <- sidebarPanel(
-    selectInput('post_id', label = 'Select post', choices = posts),
-    uiOutput('comment_select'),
+    tags$div(class = 'inline',
+        selectInput('post_id', label = 'Select post', choices = posts),
+        uiOutput('comment_select')),
     h3('Author'),
     textOutput('author'),
     h3('Date'),
@@ -65,18 +69,24 @@ comment_tab <- tabPanel('Comments',
     htmlOutput('comment_content')
 )
 codes_tab <- tabPanel('Codes',
+    h3('Coding Results'),
+    p('Download all coding results (the entries displayed in the sidebar with their associated post
+        or comment), or replace them by uploading a new CSV file with the same columns.'),
+    downloadButton('codes_down', 'Download'),
+    fileInput('codes_up', label = 'Replace with ...', accept = 'text/csv'),
     h3('Codebook'),
+    p('Create new entries in the Codebook. To edit existing entries, download and
+        replace the Codebook. Backup your data (i.e. download the coding results)
+        before replacing the codebook!'),
+    tableOutput('codebook'),
+    tags$div(class = 'inline',
+        actionButton('codebook_submit', 'Append'),
+        textInput('codebook_code', 'code'),
+        textInput('codebook_description', 'description')),
     p('Download the current codebook (displayed below), or
       replace it by uploading a new CSV file with identical structure.'),
-    tableOutput('codebook'),
     downloadButton('codebook_down', 'Download'),
-    fileInput('codebook_up', label = 'Replace with ...', accept = 'text/csv'),
-    h3('Codes'),
-    p('The current codes are displayed with the associated post or comments.
-      Download the table of all codes, or replace it by uploading a new CSV
-      file with identical structure.'),
-    downloadButton('codes_down', 'Download'),
-    fileInput('codes_up', label = 'Replace with ...', accept = 'text/csv')
+    fileInput('codebook_up', label = 'Replace with ...', accept = 'text/csv')
 )
 main <- mainPanel(
     tabsetPanel(id = 'content', type = 'tabs', post_tab, comment_tab, codes_tab),
@@ -84,11 +94,12 @@ main <- mainPanel(
     id = 'main-panel'
 )
 
-## User Interface (web page)
-ui <- fluidPage(sidebarLayout(sidebar, main),
-                includeScript('www/app.js'),
-                tags$head(includeCSS('www/app.css')),
-                id = 'app-container')
+## layout and assets
+ui <- fluidPage(
+    sidebarLayout(sidebar, main),
+    includeScript('www/app.js'),
+    tags$head(includeCSS('www/app.css')),
+    id = 'app-container')
 
 # Server (that runs R code)
 server <- function(input, output, session) {
@@ -97,17 +108,24 @@ server <- function(input, output, session) {
     robs <- reactiveVal(obs)
     rcodebook <- reactiveVal(codebook)
     
+    # handle switching tab to Post or Comments
+    ignore_comment_id <- reactiveVal(TRUE)
+    observeEvent(input[['content']], {
+        if (input[['content']] == 'Post') {
+            ignore_comment_id(TRUE)
+        } else if (input[['content']] == 'Comments')
+            ignore_comment_id(FALSE)
+    })
+    
     # pull from bedbugger tables
-    current_post <- reactive(
-        post %>%
-            filter(id == input[['post_id']]))
-    current_comment_set <- reactive(
-        comment %>%
-            filter(post_id == input[['post_id']]) %>%
-            arrange(date_gmt))
-    current_comment <- reactive(
-        current_comment_set() %>%
-            filter(id == input[['comment_id']]))
+    current_post <- reactive(post %>%
+        filter(id == input[['post_id']]))
+    current_comment_set <- reactive(comment %>%
+        filter(post_id == input[['post_id']]) %>%
+        arrange(date_gmt))
+    current_comment <- reactive(comment %>%
+        filter(post_id == input[['post_id']]) %>%
+        filter(id == input[['comment_id']]))
 
     # render comment selector
     output[['comment_select']] <- renderUI(
@@ -115,15 +133,22 @@ server <- function(input, output, session) {
             choices = pull(current_comment_set(), id)))
     
     # post metadata
-    output[['author']] <- renderText(
-        switch(input[['content']],
-            'Comments' = current_comment()[['author_name']],
-            current_post()[['author_name']]))
-    output[['date_gmt']] <- renderText(
-        switch(input[['content']],
-            'Comments' = current_comment()[['date_gmt']],
-            current_post()[['date_gmt']]) %>%
-            strftime(format = "%Y-%m-%d %H:%M:%S"))
+    output[['author']] <- renderText({
+        if (ignore_comment_id()) {
+            current <- current_post()
+        } else {
+            current <- current_comment()
+        }
+        current[['author_name']]
+    })
+    output[['date_gmt']] <- renderText({
+        if (ignore_comment_id()) {
+            current <- current_post()
+        } else {
+            current <- current_comment()
+        }
+        strftime(current[['date_gmt']], '%Y-%m-%d %H:%M:%S')
+    })
 
     # post content
     output[['post_title']] <- renderText(current_post()[['title']])
@@ -137,78 +162,92 @@ server <- function(input, output, session) {
         paste(comments, collapse = '')
     })
     
-    # existing codes entered
-    output[['obs_prior']] <- renderTable(
-        switch(input[['content']],
-            'Comments' = filter(robs(), comment_id == input[['comment_id']]),
-            filter(robs(), is.na(comment_id))) %>%
-            filter(post_id == input[['post_id']]) %>%
-            select(code, text),
-        width = '100%')
-
-    # code entry
+    # existing codes
+    output[['obs_prior']] <- renderTable({
+        obs_prior <- filter(robs(), post_id == input[['post_id']])
+        if (ignore_comment_id()) {
+            obs_prior <- filter(obs_prior, is.na(comment_id))
+        } else {
+            obs_prior <- filter(obs_prior, comment_id == input[['comment_id']])            
+        }
+        select(obs_prior, code, text)
+    }, width = '100%')
+    
+    # coding posts and comments
     output[['code_select']] <- renderUI(
         selectInput('obs_code', label = 'Code',
-            choices = c('', levels(robs()[['code']]))))
+            choices = c('', rcodebook()[['code']])))
     observeEvent(input[['obs_submit']], {
-        obs <- robs()
         obs_row <- nrow(obs) + 1
         obs[[obs_row, 1]] <- as.integer(input[['post_id']])
-        if (input[['content']] == 'Comments') {
+        if (!ignore_comment_id()) {
             obs[[obs_row, 2]] <- as.integer(input[['comment_id']])
         }
         obs[[obs_row, 3]] <- input[['obs_code']]
         obs[[obs_row, 4]] <- input[['obs_text']]
         obs[[obs_row, 5]] <- input[['obs_memo']]
-        robs(obs)
-        obs <<- robs()
         updateTextInput(session, 'obs_memo', value = '')
         updateTextAreaInput(session, 'obs_text', value = '')
         updateSelectInput(session, 'obs_code', selected = '')
+        robs(obs)
     })
 
-    # Down/upload
-    output[['codebook']] <- renderTable(rcodebook())
-    output[['codebook_down']] <- downloadHandler(
-        filename = function() {
-            paste('codebook-', Sys.Date(), '.csv', sep='')
-        },
-        content = function(con) {
-            write.csv(rcodebook(), con, row.names = FALSE)
-        }
-    )
-    output[['codes_down']] <- downloadHandler(
-        filename = function() {
-            paste('codes-', Sys.Date(), '.csv', sep='')
-        },
-        content = function(con) {
-            write.csv(robs(), con, row.names = FALSE)
-        }
-    )
-    observeEvent(input[['codebook_up']], {
-        infile <- input[['codebook_up']]
-        codebook <- read.csv(infile$datapath, stringsAsFactors = FALSE)
-        codebook[[1]] <- factor(codebook[[1]])
+    # append to codebook
+    observeEvent(input[['codebook_submit']], {
+        idx <- nrow(codebook) + 1
+        codebook[[idx, 1]] <- input[['codebook_code']]
+        codebook[[idx, 2]] <- input[['codebook_description']]
+        updateTextInput(session, 'codebook_code', value = '')
+        updateTextInput(session, 'codebook_description', value = '')
         rcodebook(codebook)
-        codebook <<- rcodebook()
-        levels(obs[['code']]) <- codebook[['code']]
-        robs(obs)
-    })
-    observeEvent(input[['codes_up']], {
-        infile <- input[['codes_up']]
-        obs <- read.csv(infile$datapath, stringsAsFactors = FALSE)
-        obs[['code']] <- factor(obs[['code']],
-            levels = rcodebook()[['code']])
-        robs(obs)
-        obs <<- robs()
     })
     
-    # on session ended
+    # down/upload
+    output[['codebook']] <- renderTable(rcodebook())
+    output[['codebook_down']] <- downloadHandler(
+        filename = function() paste('codebook-', Sys.Date(), '.csv', sep=''),
+        content = function(c) write.csv(rcodebook(), c, row.names = FALSE))
+    observeEvent(input[['codebook_up']], {
+        infile <- input[['codebook_up']]
+        # overwrite codebook
+        codebook <- read.csv(infile$datapath, stringsAsFactors = FALSE)
+        rcodebook(codebook)
+    })
+    output[['codes_down']] <- downloadHandler(
+        filename = function() paste('codes-', Sys.Date(), '.csv', sep=''),
+        content = function(c) write.csv(robs(), c, row.names = FALSE))
+    observeEvent(input[['codes_up']], {
+        infile <- input[['codes_up']]
+        # overwrite codes
+        obs <- read.csv(infile$datapath, stringsAsFactors = FALSE)
+        obs[['code']] <- factor(obs[['code']], levels = rcodebook()[['code']])
+        if (anyNA(obs[['code']])) {
+            showModal(modalDialog(
+                title = 'Replacement Unallowed',
+                'The uploaded file was not accepted because missing codes were
+                present or introduced. Are all codes in the codebook?',
+                easyClose = TRUE
+            ))
+        } else {
+            robs(obs)
+        }
+    })
+    
+    # store data locally on session ended
+    observeEvent(robs(), {
+        obs <<- robs()
+    })
+    observeEvent(rcodebook(), {
+        codebook <<- rcodebook()
+        # append levels to obs
+        levels(obs[['code']]) <- union(levels(obs[['code']]), codebook[['code']])
+        robs(obs)
+    })
     session$onSessionEnded(function() {
         save(codebook, obs, file = obs_filename)
         stopApp()
     })
 }
 
-# Run the application 
+# run the application 
 shinyApp(ui = ui, server = server)
