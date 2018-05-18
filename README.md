@@ -25,11 +25,11 @@ perhaps good for reproducibility (bad for updating).
 
 ## Shiny App
 
-The single-file [app.R](app.R) and a tiny bit of CSS and JavaScript
-comprise the coding tool.  The app currently stores the user-assigned
-codes in a local "codes.RData" file. A planned feature, making ShAQDAS
-actually multi-user, is to allow annotations to be stored in one
-database for real-time collaboration.
+The single-file [app.R](app.R) and a tiny bit of [CSS](app.css) and
+[JavaScript](app.js) comprise the coding tool.  The app currently
+stores the user-assigned codes in a local "codes.RData" file. A
+planned feature, making ShAQDAS actually multi-user, is to allow
+annotations to be stored in one database for real-time collaboration.
 
 ### Useage
 
