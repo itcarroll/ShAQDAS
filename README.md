@@ -35,9 +35,9 @@ database for real-time collaboration.
 
 Once launched, ShAQDAS displays three tabs: two for the pupose of
 coding articles and one for importing / exporting the entered codes.
-The "Post" and "Comments" tab work the same way, copy text you want to
-code into the entry form, choose a code, and optionally add a memo.
-Highlighting would be nice, wouldn't it?
+The "Post" and "Comments" tab work the same way: copy text you want to
+code into the text form, optionally compose a memo, and choose a code.
+Highlighting would be nice; any idea how to implement?
 
 #### The “Post” Tab
 
