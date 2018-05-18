@@ -1,5 +1,5 @@
 """Create the ORM for a database schema with tables for holding
-the full text content of posts at https://bebugger.com. Learn more at
+the full text content of posts on a wordpress site. Learn more at
 http://docs.sqlalchemy.org/en/latest/."""
 
 from sqlalchemy.ext.declarative import declarative_base

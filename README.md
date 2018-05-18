@@ -1,19 +1,62 @@
-# Bedbugger Articles
+# ShAQDAS
 
-View an example article and associated comments at <http://bedbugger.com/2017/06/02/911-dispatch-centers-bed-bugs-jackson/>. This repository collects all articles from the Bedbugger Archives along with associated comments and places them in local storage. It also includes a Shiny app to facilitate annotation, in the style of a Computer Assisted Qualitative Data AnalysiS (CAQDAS) program.
+The "Shiny Assisted Qualitative Data Analysis Software" app is a
+multi-user [CAQDAS] built with R Shiny."
 
+The pilot contained in this repository originated as a project to
+collect and code a blog, that happened to be a Wordpress.org site. So
+is [wilwheaton.net], enough said. This repository contains Python code
+to scrape the content from the Wordpress API into a database and a
+Shiny app to allow users to view and assign codes to excerpts.
 
-# Aquisition
+## Data Aquisition
 
-The website is a WordPress.org application with the JSON API active. Local storage is the "bedbugger" schema within the "bedbugs" database on the PostgreSQL research.sesync.org server. The database tables were defined and populated using the Python SQLAlchemy and requests modules, and can be recreated by executing.
+The website is a WordPress.org application with the JSON API
+active. Local storage is in a SQLite database, but would be changed to
+PostgreSQL in production. The database tables are defined and
+populated using the Python SQLAlchemy and requests modules, and can be
+recreated by executing `python wordpress_scrape.py`. Caution: Wil
+Wheaton writes [alot of blogs]. The site URL and database name are
+hard-coded in this pilot. The table definitions are specified through
+the more generic ORM in [wordpress_orm.py](wordpress_orm.py).
 
-```
-> export $(cat .Renviron)
-> python3 bedbugger.py
-```
+## App Useaage
 
-The table definitions are specified through the ORM in bedbugger_orm.py.
+The single-file [app.R](app.R) and a tiny bit of CSS and JavaScript
+comprise the coding tool.  The app currently stores the user-assigned
+codes in a local "codes.RData" file. A planned feature, making ShAQDAS
+actually multi-user, is to allow annotations to be stored in one
+database for real-time collaboration.
 
-# Annotation
+## Useage
 
-The "BedbuggerCoder" folder contains a Shiny app, with a dependency on "BedbuggerCoder/bedbugger.RData". The dependency is exported and pre-processed tables from the "bedbugs.bedbugger" schema and can be created by running "bedbugger_export.R" (note that the Rproj must be opened or the .Renviron otherwise loaded). The app with data can be distributed as a ZIP to the research assistants, who's annotations will be stored in a local "codes.RData" file. The process for combinging multiple assistant's work is to be done manually and in conjunction with the app's export / import feature.
+Once launched, ShAQDAS displays three tabs: two for the pupose of
+coding articles and one for importing / exporting the entered codes.
+
+### The “Post” Tab
+
+A selected article's main "post" is visible in this tab, and the
+associated author and publication date show in the sidebar. Any codes
+added in the sidebar are associated with the content visible in this
+tab.
+
+### The “Comments” Tab
+
+All comments on a selected article are visible in this tab, the
+selected comment is highlighted with a red border, and the associated
+author and publication date show in the sidebar. Any codes added in
+the sidebar are associated with the content within the red box visible
+in this tab.
+
+### The “Codes” Tab
+
+There are two tables that can be imported or exported (both are stored
+locally within a "RData" file). The "Codebook" is a table
+that determines which codes are available in the drop down menu for
+code entry. The "Codes" table holds all entered codes. Uploading
+either one **will overwrite** the tables in the app, so always
+"Download" a copy as a backup before uploading a replacement.
+
+[wilwheaton.net]: http://wilwheaton.net
+[ALOT]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
+[CAQDAS]: https://en.wikipedia.org/wiki/Computer-assisted_qualitative_data_analysis_software

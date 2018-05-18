@@ -6,19 +6,42 @@
 #
 #    http://shiny.rstudio.com/
 #
-
 library(shiny)
 library(dplyr)
+library(RSQLite)
+library(xml2)
 
-# Load post and comments data.frames from bedbugger.RData
-load('bedbugger.RData')
+# Load post and comments as data.frames from database
+con <- dbConnect(SQlite(), dbname = 'wilwheaton.db')
+author <- tbl(con, 'author')
+post <- tbl(con, 'post') %>%
+    left_join(author, by = c('author_id' = 'id')) %>%
+    select(id, date_gmt, author_name = name, title, content)
+comment <- tbl(con, 'comment') %>%
+    select(id, post_id, date_gmt, author_name, content)
+
+# function to purge <iframe> and <script> from content
+# and add <div> container with id when provided
+clean_content <- function(content, id = NULL) {
+    content <- read_html(content)
+    scripts <-  xml_find_all(content, '//script')
+    xml_remove(scripts)
+    iframes <-  xml_find_all(content, '//iframe')
+    xml_remove(iframes)
+    content <- xml_child(content, 'body')
+    xml_name(content) <- 'div'
+    if (!is.null(id)) {
+        xml_attr(content, 'id') <- paste('comment', id, sep = '-')
+    }
+    as.character(content)
+}
 
 # vector for IDs used in navigation
 posts <- post %>%
     arrange(desc(date_gmt)) %>%
     pull(id)
 
-# Storage of entered codes
+# storage of entered codes
 obs_filename <- 'codes.RData'
 if (file.exists(obs_filename)) {
     load(obs_filename)
@@ -28,8 +51,8 @@ if (!exists('codebook')) {
         code = c('BB-8', 'C-3PO', 'R2-D2'),
         description = c(
             'spherical in quality',
-            'shines, and translates easily',
-            'evidence of trouble ahead'),
+            'bright, translates easily',
+            'wasn\'t that Wesley\'s droid?'),
         stringsAsFactors = FALSE)
 }
 if (!exists('obs')) {
@@ -41,7 +64,7 @@ if (!exists('obs')) {
         memo = character(), stringsAsFactors = FALSE)
 }
 
-# UI (User Interface)
+# User Interface
 
 ## elements
 sidebar <- sidebarPanel(
@@ -70,14 +93,15 @@ comment_tab <- tabPanel('Comments',
 )
 codes_tab <- tabPanel('Codes',
     h3('Coding Results'),
-    p('Download all coding results (the entries displayed in the sidebar with their associated post
-        or comment), or replace them by uploading a new CSV file with the same columns.'),
+    p('Download all coding results (the entries displayed in the sidebar with
+        their associated post or comment), or replace them by uploading a new
+        CSV file with the same columns.'),
     downloadButton('codes_down', 'Download'),
     fileInput('codes_up', label = 'Replace with ...', accept = 'text/csv'),
     h3('Codebook'),
-    p('Create new entries in the Codebook. To edit existing entries, download and
-        replace the Codebook. Backup your data (i.e. download the coding results)
-        before replacing the codebook!'),
+    p('Create new entries in the Codebook. To edit existing entries, download
+        and replace the Codebook. Backup your data (i.e. download the coding
+        results) before replacing the codebook!'),
     tableOutput('codebook'),
     tags$div(class = 'inline',
         actionButton('codebook_submit', 'Append'),
@@ -89,7 +113,8 @@ codes_tab <- tabPanel('Codes',
     fileInput('codebook_up', label = 'Replace with ...', accept = 'text/csv')
 )
 main <- mainPanel(
-    tabsetPanel(id = 'content', type = 'tabs', post_tab, comment_tab, codes_tab),
+    tabsetPanel(id = 'content', type = 'tabs',
+        post_tab, comment_tab, codes_tab),
     width = 8,
     id = 'main-panel'
 )
@@ -101,7 +126,7 @@ ui <- fluidPage(
     tags$head(includeCSS('www/app.css')),
     id = 'app-container')
 
-# Server (that runs R code)
+# Server
 server <- function(input, output, session) {
     
     # make values reactive
@@ -117,20 +142,24 @@ server <- function(input, output, session) {
             ignore_comment_id(FALSE)
     })
     
-    # pull from bedbugger tables
+    # pull from database tables
     current_post <- reactive(post %>%
-        filter(id == input[['post_id']]))
+        filter(id == input[['post_id']]) %>%
+        collect())
     current_comment_set <- reactive(comment %>%
         filter(post_id == input[['post_id']]) %>%
-        arrange(date_gmt))
+        arrange(date_gmt) %>%
+        collect())
     current_comment <- reactive(comment %>%
         filter(post_id == input[['post_id']]) %>%
-        filter(id == input[['comment_id']]))
+        filter(id == input[['comment_id']]) %>%
+        collect())
 
     # render comment selector
     output[['comment_select']] <- renderUI(
         selectInput('comment_id', label = 'Select comment',
-            choices = pull(current_comment_set(), id)))
+            choices = current_comment_set() %>%
+                pull(id)))
     
     # post metadata
     output[['author']] <- renderText({
@@ -152,7 +181,8 @@ server <- function(input, output, session) {
 
     # post content
     output[['post_title']] <- renderText(current_post()[['title']])
-    output[['post_content']] <- renderText(current_post()[['content']])
+    output[['post_content']] <- renderText(
+        clean_content(current_post()[['content']]))
 
     # comment content
     output[['comment_content']] <- renderText({
@@ -162,7 +192,8 @@ server <- function(input, output, session) {
         if (length(idx) == 0) {
             comments = ''
         } else {
-            comments <- comment_set[['content']]
+            comments <- mapply(clean_content,
+                comment_set[['content']], comment_set[['id']])
             comments[[idx]] <- sub('<div', '<div class="active"',
                 comments[[idx]], fixed = TRUE)
         }
@@ -252,6 +283,7 @@ server <- function(input, output, session) {
     })
     session$onSessionEnded(function() {
         save(codebook, obs, file = obs_filename)
+        dbDisconnect(con)
         stopApp()
     })
 }
