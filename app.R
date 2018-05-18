@@ -12,7 +12,7 @@ library(RSQLite)
 library(xml2)
 
 # Load post and comments as data.frames from database
-con <- dbConnect(SQLite(), dbname = 'wilwheaton.db')
+con <- dbConnect(SQLite(), dbname = 'wilwheaton.sqlite')
 author <- tbl(con, 'author')
 post <- tbl(con, 'post') %>%
     left_join(author, by = c('author_id' = 'id')) %>%

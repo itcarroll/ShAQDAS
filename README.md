@@ -5,23 +5,11 @@ multi-user [CAQDAS] built with R Shiny.
 
 The pilot contained in this repository originated as a project to
 collect and code a blog, that happened to be a Wordpress.org site. So
-is [wilwheaton.net], enough said. This repository contains Python code
-to scrape the content from the Wordpress API into a database and a
-Shiny app to allow users to view and assign codes to excerpts.
-
-## Data Aquisition
-
-The website is a WordPress.org application with a REST API. Local
-storage is in a SQLite database, but would be changed to PostgreSQL in
-production. Local database tables are defined and populated using the
-Python SQLAlchemy and requests modules, and can be recreated by
-executing `python wordpress_scrape.py`. Caution: Wil Wheaton writes
-[alot of blogs]; I killed this after the database topped 50Mb. The
-site URL and database name are hard-coded in this pilot. The table
-definitions are specified through the more generic ORM in
-[wordpress_orm.py](wordpress_orm.py). It's not entirely necessary that
-the data be offlined all-at-once like this, or even at all, but is
-perhaps good for reproducibility (bad for updating).
+is [wilwheaton.net], and so here we are. This repository contains
+Python code to scrape the content from the Wordpress API into a
+database and a Shiny app to allow users to view and assign codes to
+excerpts. A small portion of the scraped data is included for an
+easy demo.
 
 ## Shiny App
 
@@ -63,6 +51,22 @@ entry. Additional records can be appended one-at-a-time here. The
 "Codes" table holds all entered codes. Uploading either one **will
 overwrite** the tables in the app, so always "Download" a copy as a
 backup before uploading a replacement.
+
+## Data Aquisition
+
+The app is currently limited to data from a website running the
+WordPress.org REST API. Local storage is in a SQLite database, but
+would be changed to PostgreSQL in production. Local database tables
+are defined and populated using the Python SQLAlchemy and requests
+modules, and can be recreated by executing `python
+wordpress_scrape.py`. Caution: Wil Wheaton writes [alot of blogs]; I
+killed this after the database topped a few Mb, then cleaned up
+foreign keys in the sample. The site URL and database name are
+hard-coded in this pilot, but could easily be changed. The table
+definitions are specified through the ORM in
+[wordpress_orm.py](wordpress_orm.py). It's not entirely necessary that
+the data be offlined all-at-once like this, or even at all, but is
+perhaps good for reproducibility (bad for updating).
 
 [wilwheaton.net]: http://wilwheaton.net
 [alot of blogs]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
