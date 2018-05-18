@@ -1,7 +1,7 @@
 # ShAQDAS
 
 The "Shiny Assisted Qualitative Data Analysis Software" app is a
-multi-user [CAQDAS] built with R Shiny."
+multi-user [CAQDAS] built with R Shiny.
 
 The pilot contained in this repository originated as a project to
 collect and code a blog, that happened to be a Wordpress.org site. So
