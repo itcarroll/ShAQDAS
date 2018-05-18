@@ -65,5 +65,5 @@ overwrite** the tables in the app, so always "Download" a copy as a
 backup before uploading a replacement.
 
 [wilwheaton.net]: http://wilwheaton.net
-[ALOT]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
+[alot of blogs]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
 [CAQDAS]: https://en.wikipedia.org/wiki/Computer-assisted_qualitative_data_analysis_software
