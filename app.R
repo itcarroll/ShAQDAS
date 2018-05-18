@@ -122,8 +122,8 @@ main <- mainPanel(
 ## layout and assets
 ui <- fluidPage(
     sidebarLayout(sidebar, main),
-    includeScript('www/app.js'),
-    tags$head(includeCSS('www/app.css')),
+    includeScript('app.js'),
+    tags$head(includeCSS('app.css')),
     id = 'app-container')
 
 # Server
