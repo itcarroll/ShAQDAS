@@ -1,7 +1,7 @@
 # ShAQDAS
 
 The "Shiny Assisted Qualitative Data Analysis Software" app is a
-multi-user [CAQDAS] built with R Shiny."
+multi-user [CAQDAS] built with R Shiny.
 
 The pilot contained in this repository originated as a project to
 collect and code a blog, that happened to be a Wordpress.org site. So
@@ -35,9 +35,9 @@ database for real-time collaboration.
 
 Once launched, ShAQDAS displays three tabs: two for the pupose of
 coding articles and one for importing / exporting the entered codes.
-The "Post" and "Comments" tab work the same way, copy text you want to
-code into the entry form, choose a code, and optionally add a memo.
-Highlighting would be nice, wouldn't it?
+The "Post" and "Comments" tab work the same way: copy text you want to
+code into the text form, optionally compose a memo, and choose a code.
+Highlighting would be nice; any idea how to implement?
 
 #### The “Post” Tab
 
@@ -65,5 +65,5 @@ overwrite** the tables in the app, so always "Download" a copy as a
 backup before uploading a replacement.
 
 [wilwheaton.net]: http://wilwheaton.net
-[ALOT]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
+[alot of blogs]: http://hyperboleandahalf.blogspot.com/2010/04/alot-is-better-than-you-at-everything.html
 [CAQDAS]: https://en.wikipedia.org/wiki/Computer-assisted_qualitative_data_analysis_software
